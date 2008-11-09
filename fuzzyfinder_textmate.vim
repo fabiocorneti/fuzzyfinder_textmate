@@ -61,10 +61,11 @@ RUBY
   endif
 
   " Configuration option: g:fuzzy_path_display
-  " Set to `abbr` if you want to display the abbreviated path to a file,
-  " `full` to display the full path
+  " Set to 'abbr' if you want to display the abbreviated path to a file,
+  " 'smart' to display additional directories only for similar matches,
+  " 'full' to display the full path
   if !exists('g:fuzzy_path_display')
-    let g:fuzzy_path_display = 'full'
+    let g:fuzzy_path_display = 'smart'
   endif
 
   " Configuration option: g:fuzzy_matching_limit
@@ -114,15 +115,19 @@ RUBY
       text = VIM.evaluate('self.remove_prompt(a:base)')
       limit = VIM.evaluate('l:limit').to_i
       path_display = VIM.evaluate("g:fuzzy_path_display")
+ 
+      disambiguate = false
+      if path_display == "smart"
+        disambiguate = true
+      end
 
-      matches = finder.find(text, limit)
+      matches = finder.find(text, limit, disambiguate)
       matches.sort_by { |a| [-a[:score], a[:path]] }.each_with_index do |match, index|
         word = match[:path]
-        case path_display
-          when "full"
-            abbr = "%2d: %s" % [index+1, match[:path]]
-          else
-            abbr = "%2d: %s" % [index+1, match[:abbr]]
+        if path_display == "full"
+          abbr = "%2d: %s" % [index+1, match[:path]]
+        else
+          abbr = "%2d: %s" % [index+1, match[:abbr]]
         end
         menu = "[%5d]" % [match[:score] * 10000]
         VIM.evaluate("add(result, { 'word' : #{word.inspect}, 'abbr' : #{abbr.inspect}, 'menu' : #{menu.inspect} })")
