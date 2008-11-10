@@ -123,7 +123,7 @@ RUBY
       end
 
       matches = finder.find(text, limit, disambiguate)
-      matches.sort_by { |a| [-a[:score], a[:path]] }.each_with_index do |match, index|
+      matches.sort_by { |a| [-a[:score], a[:path].length] }.each_with_index do |match, index|
         word = match[:path]
         if path_display == "full"
           abbr = "%2d: %s" % [index+1, match[:path]]
